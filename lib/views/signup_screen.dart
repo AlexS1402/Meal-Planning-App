@@ -49,7 +49,7 @@ class SignupScreen extends StatelessWidget {
                 // Placeholder for signup logic
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => HomeDashboard()), // Update to your home screen
+                  MaterialPageRoute(builder: (context) => const HomeScreen()), // Update to your home screen
                 );
               },
               child: Text('Sign Up'),
