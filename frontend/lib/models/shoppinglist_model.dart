@@ -1,4 +1,4 @@
-import 'shoppinglistitem_model';  // Assuming you have a model for individual items
+import 'shoppinglistitem_model.dart';  // Assuming you have a model for individual items
 
 class ShoppingListModel {
   final String id;
