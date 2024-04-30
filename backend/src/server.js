@@ -1,24 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const mysql = require('mysql2');
-
-// Load environment variables
-require('dotenv').config();
-
-// Create a connection to the database
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-});
-
-// Connect to the database
-db.connect(err => {
-    if (err) throw err;
-    console.log('Connected to the database successfully.');
-});
+const db = require('./db');
+const router = express.Router();
+const recipesRoutes = require('./routes/recipes_be');
 
 // Initialize express app
 const app = express();
@@ -31,6 +16,9 @@ app.use(bodyParser.json());
 app.get('/', (req, res) => {
     res.send('Hello from the backend API!');
 });
+
+//use the recipesRoutes
+app.use('/recipes', recipesRoutes);
 
 // Define a port and start the server
 const PORT = process.env.PORT || 3000;

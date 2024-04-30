@@ -1,11 +1,11 @@
 class Recipe {
-  final int id;
-  final String title;
-  final String description;
-  final double calories;
-  final double proteins;
-  final double carbs;
-  final double fats;
+  int id;
+  String title;
+  String description;
+  double calories;
+  double proteins;
+  double carbs;
+  double fats;
 
   Recipe({
     required this.id,
@@ -19,13 +19,25 @@ class Recipe {
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
     return Recipe(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      calories: json['calories'],
-      proteins: json['proteins'],
-      carbs: json['carbs'],
-      fats: json['fats'],
+      id: json['id'] as int,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      calories: (json['calories'] as num).toDouble(),
+      proteins: (json['proteins'] as num).toDouble(),
+      carbs: (json['carbs'] as num).toDouble(),
+      fats: (json['fats'] as num).toDouble(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'calories': calories,
+      'proteins': proteins,
+      'carbs': carbs,
+      'fats': fats,
+    };
   }
 }
