@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db.js'); // Import the centralized db instance
+const redisClient = require('../config/redis-client.js');
+const db = require('../config/db.js'); // Import the centralized db instance
 
 // POST route to add a new recipe
 router.post('/', (req, res) => {
@@ -132,39 +133,52 @@ router.put('/:id', (req, res) => {
 });
 
 // GET route to fetch all recipes and its nutrition
-router.get('/', (req, res) => {
-    const search = req.query.search;
-    const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 10; // Default page size
+router.get('/', async (req, res) => {
+    const { search, page = 1, pageSize = 10 } = req.query;
     const offset = (page - 1) * pageSize;
+    const cacheKey = `recipes:${search || 'all'}:page:${page}`;
 
-    let queryBase = 'SELECT Recipes.id, Recipes.title, Recipes.description, RecipeNutrition.calories, RecipeNutrition.proteins, RecipeNutrition.carbs, RecipeNutrition.fats FROM Recipes JOIN RecipeNutrition ON Recipes.id = RecipeNutrition.recipeId';
-    let query = queryBase;
+    try {
+        // Try to fetch the result from Redis first
+        const cachedData = await redisClient.get(cacheKey);
+        if (cachedData != null) {
+            console.log('Fetching from cache');
+            return res.json(JSON.parse(cachedData));
+        }
 
-    if (search) {
-        query += ' WHERE Recipes.title LIKE ? OR Recipes.description LIKE ?';
-        query += ` LIMIT ${pageSize} OFFSET ${offset}`;
-        const searchPattern = `%${search}%`;
-        db.query(query, [searchPattern, searchPattern], (err, results) => {
-            if (err) {
-                console.error('Failed to fetch recipes:', err);
-                res.status(500).send('Failed to fetch recipes');
-                return;
-            }
-            res.json(results);
-        });
-    } else {
-        query += ` LIMIT ${pageSize} OFFSET ${offset}`;
-        db.query(query, (err, results) => {
-            if (err) {
-                console.error('Failed to fetch recipes:', err);
-                res.status(500).send('Failed to fetch recipes');
-                return;
-            }
-            res.json(results);
-        });
+        // If not found in cache, construct the query and fetch from the database
+        let query = `SELECT Recipes.id, Recipes.title, Recipes.description, RecipeNutrition.calories, RecipeNutrition.proteins, RecipeNutrition.carbs, RecipeNutrition.fats FROM Recipes JOIN RecipeNutrition ON Recipes.id = RecipeNutrition.recipeId`;
+        if (search) {
+            query += ` WHERE Recipes.title LIKE ? OR Recipes.description LIKE ?`;
+            query += ` LIMIT ? OFFSET ?`;
+            const searchPattern = `%${search}%`;
+            db.query(query, [searchPattern, searchPattern, parseInt(pageSize), offset], (err, results) => {
+                if (err) {
+                    console.error('Failed to fetch recipes:', err);
+                    res.status(500).send('Failed to fetch recipes');
+                    return;
+                }
+                // Save the fetched results to Redis, set to expire in 1 hour
+                redisClient.setEx(cacheKey, 3600, JSON.stringify(results));
+                res.json(results);
+            });
+        } else {
+            query += ` LIMIT ? OFFSET ?`;
+            db.query(query, [parseInt(pageSize), offset], (err, results) => {
+                if (err) {
+                    console.error('Failed to fetch recipes:', err);
+                    res.status(500).send('Failed to fetch recipes');
+                    return;
+                }
+                // Save the fetched results to Redis, set to expire in 1 hour
+                redisClient.setEx(cacheKey, 3600, JSON.stringify(results));
+                res.json(results);
+            });
+        }
+    } catch (error) {
+        console.error('Failed during Redis operation', error);
+        res.status(500).send('Server error');
     }
 });
-
 
 module.exports = router;
