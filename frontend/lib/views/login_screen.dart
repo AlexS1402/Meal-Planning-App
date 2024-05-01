@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert'; // For using jsonDecode
 import 'package:mealplanningapp/views/signup_screen.dart';
 import 'package:mealplanningapp/views/main_navigation.dart';
-import 'main_navigation.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -14,7 +13,7 @@ class LoginScreen extends StatelessWidget {
   Future<void> login(BuildContext context) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.215:3001/api/auth/login'),
+        Uri.parse('http://localhost:3001/auth/login'),
         headers: <String, String>{
           'Content-Type': 'application/json',
         },

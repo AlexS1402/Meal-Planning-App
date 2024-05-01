@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // For using jsonDecode
-import 'package:mealplanningapp/views/main_navigation.dart';
-import 'main_navigation.dart';
 
 class SignupScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -35,7 +33,7 @@ class SignupScreen extends StatelessWidget {
     try {
       final response = await http.post(
         Uri.parse(
-            'http://<your-server-ip>:3001/api/auth/register'), // Adjust this URL
+            'http://localhost:3001/auth/register'), // Adjust this URL
         headers: <String, String>{
           'Content-Type': 'application/json',
         },

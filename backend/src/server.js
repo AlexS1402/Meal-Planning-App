@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 });
 
 //use the loginRoutes
-app.use('/api/auth', loginRoutes);
+app.use('/auth', loginRoutes);
 
 //use the mealplanRoutes
 app.use('/mealplans', mealPlansRoutes);
