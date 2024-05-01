@@ -1,9 +1,6 @@
 const mysql = require('mysql2');
 const fs = require('fs');
 
-// Load environment variables if not loaded elsewhere in your app
-require('dotenv').config();
-
 // Create a database connection and export it
 const db = mysql.createConnection({
     host: 'meal-planner-db.mysql.database.azure.com',

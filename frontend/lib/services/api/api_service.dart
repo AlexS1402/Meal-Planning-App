@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:mealplanningapp/models/recipe_model.dart';
 
 class ApiService {
-  final String baseUrl = 'http://192.168.1.215:3000';  // Adjust as needed
+  final String baseUrl = 'http://192.168.1.215:3001';  // Adjust as needed
 
   Future<List<Recipe>> fetchRecipes() async {
     try {
