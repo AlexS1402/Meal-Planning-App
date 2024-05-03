@@ -14,51 +14,34 @@ class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
 
   Future<void> login(BuildContext context) async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost:3001/auth/login'),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(<String, String>{
-          'username': _emailController.text,
-          'password': _passwordController.text,
-        }),
-      );
+  try {
+    final response = await http.post(
+      Uri.parse('http://localhost:3001/auth/login'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, String>{
+        'username': _emailController.text,
+        'password': _passwordController.text,
+      }),
+    );
 
-      if (response.statusCode == 200) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  const MainNavigation()), // Navigate on success
-        );
-      } else {
-        // Handle failure
-        final responseData = jsonDecode(response.body);
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Login Failed'),
-            content: Text(responseData['message']),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                },
-                child: const Text('Okay'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e) {
-      // Handle error in sending request
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      final userId = responseData['userId']; // Get userId from response
+      await saveUserId(userId); // Save userId to local storage
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainNavigation()),
+      );
+    } else {
+      // Handle failure
+      final responseData = jsonDecode(response.body);
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Error'),
-          content: Text('An error occurred. Please try again later.'),
+          title: const Text('Login Failed'),
+          content: Text(responseData['message']),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -70,7 +53,25 @@ class LoginScreen extends StatelessWidget {
         ),
       );
     }
+  } catch (e) {
+    // Handle error in sending request
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Error'),
+        content: Text('An error occurred. Please try again later.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Okay'),
+          ),
+        ],
+      ),
+    );
   }
+}
 
   Future<void> saveUserId(int userId) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();

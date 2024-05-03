@@ -107,12 +107,12 @@ router.put("/:id", (req, res) => {
   });
 });
 
-// GET route to fetch all recipes and its nutrition
+// GET route to fetch recipes by userId, with pagination and search
 router.get("/", async (req, res) => {
-  const { search, page = 1, pageSize = 10 } = req.query;
+  const { userId, search, page = 1, pageSize = 10 } = req.query;
   const limit = parseInt(pageSize, 10);
   const offset = (page - 1) * limit;
-  const cacheKey = `recipes:${search || "all"}:page:${page}`;
+  const cacheKey = `recipes:${userId}:${search || "all"}:page:${page}`;
 
   try {
     const cachedData = await redisClient.get(cacheKey);
@@ -121,11 +121,11 @@ router.get("/", async (req, res) => {
       res.json(JSON.parse(cachedData));
     } else {
       let query =
-        "SELECT r.id, r.title, r.description, rn.calories, rn.proteins, rn.carbs, rn.fats FROM Recipes r JOIN RecipeNutrition rn ON r.id = rn.recipeId";
-      let queryParams = [];
+        "SELECT r.id, r.title, r.description, rn.calories, rn.proteins, rn.carbs, rn.fats FROM Recipes r JOIN RecipeNutrition rn ON r.id = rn.recipeId WHERE r.userId = ?";
+      let queryParams = [userId];
 
       if (search) {
-        query += " WHERE r.title LIKE ? OR r.description LIKE ?";
+        query += " AND (r.title LIKE ? OR r.description LIKE ?)";
         queryParams.push(`%${search}%`, `%${search}%`);
       }
 

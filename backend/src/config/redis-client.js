@@ -13,7 +13,7 @@ redisClient.connect().then(() => {
   // You can perform operations here that need to happen right after connecting
   clearCache();
 }).catch((err) => {
-  console.error('Redis connection error:', err);
+  console.error('Redis condnection error:', err);
 });
 
 function clearCache() {

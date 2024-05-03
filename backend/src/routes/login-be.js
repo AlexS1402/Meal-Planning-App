@@ -32,11 +32,11 @@ router.post("/register", async (req, res) => {
 });
 
 // Login Endpoint
-router.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    
-    // Query to find user by username
-    const query = "SELECT * FROM Users WHERE username = ?";
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  
+  // Query to find user by username
+  const query = "SELECT * FROM Users WHERE username = ?";
   db.query(query, [username], async (err, results) => {
     if (err) {
       console.error('Database error:', err);
@@ -53,12 +53,12 @@ router.post('/login', (req, res) => {
     const match = await bcrypt.compare(password, user.password_hash);
     if (match) {
       req.session.userId = user.id; // Set userId to session after successful login
-      res.json({ message: 'Logged in successfully' });
+      res.json({ message: 'Logged in successfully', userId: user.id }); // Send userId in response
     } else {
       res.status(401).send('Authentication failed');
     }
-    });
   });
+});
 
     // Logout Endpoint
   router.get('/logout', (req, res) => {

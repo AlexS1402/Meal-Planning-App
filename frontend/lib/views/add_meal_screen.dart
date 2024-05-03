@@ -5,7 +5,6 @@ import 'package:mealplanningapp/models/recipe_model.dart'; // Ensure this path m
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mealplanningapp/services/user_service.dart';
 
-
 class AddMealPlanScreen extends StatefulWidget {
   @override
   _AddMealScreenState createState() => _AddMealScreenState();
@@ -27,12 +26,12 @@ class _AddMealScreenState extends State<AddMealPlanScreen> {
   }
 
   void _fetchRecipes() async {
-    var recipes = await ApiService().fetchRecipes();
+    int userId = await UserService.getUserId();
+    var recipes = await ApiService().fetchRecipes(userId);
     setState(() {
       _recipes = recipes;
     });
   }
-
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -56,22 +55,24 @@ class _AddMealScreenState extends State<AddMealPlanScreen> {
         return AlertDialog(
           content: SingleChildScrollView(
             child: ListBody(
-              children: _recipes.map((recipe) => CheckboxListTile(
-                title: Text(recipe.title),
-                value: _selectedRecipes.contains(recipe.id),
-                onChanged: (bool? value) {
-                  setState(() {
-                    if (value!) {
-                      if (!_selectedRecipes.contains(recipe.id)) {
-                        _selectedRecipes.add(recipe.id!);
-                      }
-                    } else {
-                      _selectedRecipes.remove(recipe.id);
-                    }
-                  });
-                  (context as Element).markNeedsBuild();
-                },
-              )).toList(),
+              children: _recipes
+                  .map((recipe) => CheckboxListTile(
+                        title: Text(recipe.title),
+                        value: _selectedRecipes.contains(recipe.id),
+                        onChanged: (bool? value) {
+                          setState(() {
+                            if (value!) {
+                              if (!_selectedRecipes.contains(recipe.id)) {
+                                _selectedRecipes.add(recipe.id!);
+                              }
+                            } else {
+                              _selectedRecipes.remove(recipe.id);
+                            }
+                          });
+                          (context as Element).markNeedsBuild();
+                        },
+                      ))
+                  .toList(),
             ),
           ),
           actions: <Widget>[
@@ -151,35 +152,67 @@ class _AddMealScreenState extends State<AddMealPlanScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Recipes:', style: Theme.of(context).textTheme.subtitle1),
-                  ..._selectedRecipes.map((id) => Text(
-                    _recipes.firstWhere((recipe) => recipe.id == id).title,
-                    style: Theme.of(context).textTheme.bodyText1,
-                  )).toList(),
+                  Text('Recipes:',
+                      style: Theme.of(context).textTheme.subtitle1),
+                  ..._selectedRecipes
+                      .map((id) => Text(
+                            _recipes
+                                .firstWhere((recipe) => recipe.id == id)
+                                .title,
+                            style: Theme.of(context).textTheme.bodyText1,
+                          ))
+                      .toList(),
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton(
                           onPressed: _showRecipeSelector,
-                          child: Text('AddRecipes', style: TextStyle(fontSize: 12)),
+                          child: Text('Add Recipes',
+                              style: TextStyle(fontSize: 12)),
                         ),
                       ),
                       SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () {
-                            print("Submitting with title: ${_titleController.text}");
-                            if (_formKey.currentState!.validate() && _selectedRecipes.isNotEmpty) {
-                              ApiService().addMealPlan({
-                                'userId': UserService.getUserId(),  // Replace with actual user ID
-                                'name': _titleController.text,
-                                'date': _dateController.text,
-                                'type': _mealType,
-                                'recipes': _selectedRecipes,
-                              });
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate() &&
+                                _selectedRecipes.isNotEmpty) {
+                              int userId = await UserService
+                                  .getUserId(); // Await the getUserId call
+                              try {
+                                await ApiService().addMealPlan({
+                                  'userId': userId,
+                                  'name': _titleController.text,
+                                  'date': _dateController.text,
+                                  'type': _mealType,
+                                  'recipes': _selectedRecipes,
+                                });
+                                // If no exception, show a success message
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text("Meal Plan Added Successfully")),
+                                );
+                              } catch (e) {
+                                // Show error if something goes wrong
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text("Failed to add meal plan: $e")),
+                                );
+                                print("Error adding meal plan: $e");
+                              }
+                            } else {
+                              // Validation or recipe selection failed
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        "Please fill all fields and select at least one recipe")),
+                              );
                             }
                           },
-                          child: Text('Submit Meal Plan', style: TextStyle(fontSize: 12)),
+                          child: Text('Submit Meal Plan',
+                              style: TextStyle(fontSize: 12)),
                         ),
                       ),
                     ],

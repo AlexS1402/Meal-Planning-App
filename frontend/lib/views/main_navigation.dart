@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'meal_plan_overview.dart';
 import 'recipe_search.dart';
-import 'shopping_list.dart';
+import 'recipe_suggestion.dart';
 import 'nutritional_tracking.dart';
 import 'settings_profile.dart';
 

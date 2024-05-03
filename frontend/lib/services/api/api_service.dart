@@ -9,11 +9,13 @@ import 'package:mealplanningapp/services/user_service.dart';
 class ApiService {
   final String baseUrl = 'http://192.168.1.215:3001'; // Adjust as needed
 
-  //method to fetch recipes
-  Future<List<Recipe>> fetchRecipes() async {
+  // Method to fetch recipes
+  Future<List<Recipe>> fetchRecipes(int userId) async {
     try {
-      int userId = await UserService.getUserId();
-      final response = await http.get(Uri.parse('$baseUrl/recipes?userId=$userId'));
+      String url = userId != null
+          ? '$baseUrl/recipes?userId=$userId'
+          : '$baseUrl/recipes';
+      final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         List<dynamic> body = jsonDecode(response.body);
         return body.map((dynamic item) => Recipe.fromJson(item)).toList();
@@ -66,22 +68,29 @@ class ApiService {
   }
 }
 
-  //method to search for recipes
-  Future<List<Recipe>> searchRecipes(String query, int page) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/recipes?search=$query&page=$page'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
+   // Method to search for recipes
+  Future<List<Recipe>> searchRecipes(String query, int page, {int? userId}) async {
+    try {
+      String url = userId != null
+          ? '$baseUrl/recipes?search=$query&page=$page&userId=$userId'
+          : '$baseUrl/recipes?search=$query&page=$page';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
-      List<Recipe> recipes =
-          body.map((dynamic item) => Recipe.fromJson(item)).toList();
-      return recipes;
-    } else {
-      throw Exception('Failed to load recipes');
+      if (response.statusCode == 200) {
+        List<dynamic> body = jsonDecode(response.body);
+        List<Recipe> recipes =
+            body.map((dynamic item) => Recipe.fromJson(item)).toList();
+        return recipes;
+      } else {
+        throw Exception('Failed to load recipes');
+      }
+    } catch (e) {
+      throw Exception('Failed to make API call: $e');
     }
   }
 

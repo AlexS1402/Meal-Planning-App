@@ -3,6 +3,7 @@ import 'package:mealplanningapp/models/recipe_model.dart';
 import 'package:mealplanningapp/services/api/api_service.dart';
 import 'package:mealplanningapp/views/add_recipe_screen.dart';
 import 'package:mealplanningapp/views/recipe_details.dart';
+import 'package:mealplanningapp/services/user_service.dart';
 
 class RecipeSearch extends StatefulWidget {
   const RecipeSearch({Key? key}) : super(key: key);
@@ -24,8 +25,14 @@ class _RecipeSearchState extends State<RecipeSearch> {
   }
 
   void loadRecipes() async {
+    setState(() {
+      isLoading = true;
+    });
     try {
-      recipes = await ApiService().fetchRecipes();
+      int userId = await UserService
+          .getUserId(); // Ensure you get the user ID correctly.
+      recipes = await ApiService().fetchRecipes(
+          userId); // Modify the fetchRecipes method to accept a userId parameter.
       setState(() {
         isLoading = false;
       });
@@ -61,7 +68,8 @@ class _RecipeSearchState extends State<RecipeSearch> {
       currentPage = page; // Update currentPage state here
     });
     try {
-      recipes = await ApiService().searchRecipes(query, page);
+      int userId = await UserService.getUserId();
+      recipes = await ApiService().searchRecipes(query, page, userId: userId);
       setState(() {
         isLoading = false;
       });
