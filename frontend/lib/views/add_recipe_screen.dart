@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mealplanningapp/models/recipe_model.dart';
 import 'package:mealplanningapp/services/api/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   @override
@@ -9,7 +10,7 @@ class AddRecipeScreen extends StatefulWidget {
 
 class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  Recipe _newRecipe = Recipe(id: 0, title: '', description: '', calories: 0, proteins: 0, carbs: 0, fats: 0);
+  Recipe _newRecipe = Recipe(id: 0, userId: 0, title: '', description: '', calories: 0, proteins: 0, carbs: 0, fats: 0);
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {

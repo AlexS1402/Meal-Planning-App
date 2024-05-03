@@ -2,64 +2,69 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db.js");
 
-// POST endpoint to add a new meal plan
-router.post("/", async (req, res) => {
-  const { userId, date, type, recipes } = req.body; // Assume 'recipes' is an array of recipeIds
-  const connection = await db.promise().getConnection();
-  try {
-    await connection.beginTransaction();
+//add mealPlans to database
+router.post('/', (req, res) => {
+  const { userId, name, date, type, recipes } = req.body; // Include title from the request
 
-    // Insert into MealPlans table
-    const mealPlanQuery = `INSERT INTO mealplans (userId, date, type) VALUES (?, ?, ?)`;
-    const [mealPlanResult] = await connection.query(mealPlanQuery, [
-      userId,
-      date,
-      type,
-    ]);
-    const mealPlanId = mealPlanResult.insertId;
+  // Start a transaction
+  db.beginTransaction(err => {
+      if (err) {
+          console.error('Transaction Start Error:', err);
+          return res.status(500).send({ message: 'Failed to start transaction', error: err.toString() });
+      }
 
-    // Calculate total nutrition from recipes
-    let totalCalories = 0,
-      totalProteins = 0,
-      totalCarbs = 0,
-      totalFats = 0;
-    for (let recipeId of recipes) {
-      const nutritionQuery = `SELECT calories, proteins, carbs, fats FROM recipenutrition WHERE recipeId = ?`;
-      const [nutrition] = await connection.query(nutritionQuery, [recipeId]);
-      totalCalories += nutrition[0].calories;
-      totalProteins += nutrition[0].proteins;
-      totalCarbs += nutrition[0].carbs;
-      totalFats += nutrition[0].fats;
-    }
+      // Insert into MealPlans table
+      const queryMealPlans = `INSERT INTO MealPlans (userId, name, date, type) VALUES (?, ?, ?, ?)`;
+      db.query(queryMealPlans, [userId, name, date, type], (err, results) => {
+          if (err) {
+              console.error('Failed to add meal plan:', err);
+              return db.rollback(() => {
+                  res.status(500).send({ message: 'Failed to add meal plan', error: err.toString() });
+              });
+          }
 
-    // Insert into MealNutrition table
-    const nutritionInsertQuery = `INSERT INTO mealnutrition (mealplanid, calories, proteins, carbs, fats) VALUES (?, ?, ?, ?, ?)`;
-    await connection.query(nutritionInsertQuery, [
-      mealPlanId,
-      totalCalories,
-      totalProteins,
-      totalCarbs,
-      totalFats,
-    ]);
+          const mealPlanId = results.insertId;
 
-    await connection.commit();
-    res
-      .status(201)
-      .send({
-        message: "Meal plan and nutrition added successfully",
-        mealPlanId,
+          // Calculate total nutrition from recipes and insert into MealNutrition table
+          let totalCalories = 0, totalProteins = 0, totalCarbs = 0, totalFats = 0;
+          for (let recipeId of recipes) {
+              const queryNutrition = `SELECT calories, proteins, carbs, fats FROM recipenutrition WHERE recipeId = ?`;
+              db.query(queryNutrition, [recipeId], (err, nutrition) => {
+                  if (err) {
+                      console.error('Failed to add recipe nutrition:', err);
+                      return db.rollback(() => {
+                          res.status(500).send({ message: 'Failed to add recipe nutrition', error: err.toString() });
+                      });
+                  }
+                  totalCalories += nutrition[0].calories;
+                  totalProteins += nutrition[0].proteins;
+                  totalCarbs += nutrition[0].carbs;
+                  totalFats += nutrition[0].fats;
+
+                  if (recipes.indexOf(recipeId) === recipes.length - 1) {
+                      const nutritionInsertQuery = `INSERT INTO mealnutrition (mealplanid, calories, proteins, carbs, fats) VALUES (?, ?, ?, ?, ?)`;
+                      db.query(nutritionInsertQuery, [mealPlanId, totalCalories, totalProteins, totalCarbs, totalFats], (err, result) => {
+                          if (err) {
+                              console.error('Failed to insert nutrition data:', err);
+                              return db.rollback(() => {
+                                  res.status(500).send({ message: 'Failed to insert nutrition data', error: err.toString() });
+                              });
+                          }
+                          db.commit(err => {
+                              if (err) {
+                                  console.error('Transaction Commit Error:', err);
+                                  return db.rollback(() => {
+                                      res.status(500).send({ message: 'Failed to commit transaction', error: err.toString() });
+                                  });
+                              }
+                              res.status(201).send({ message: 'Meal plan and nutrition added successfully', mealPlanId });
+                          });
+                      });
+                  }
+              });
+          }
       });
-  } catch (error) {
-    await connection.rollback();
-    res
-      .status(500)
-      .send({
-        message: "Failed to add meal plan and nutrition",
-        error: error.toString(),
-      });
-  } finally {
-    connection.release();
-  }
+  });
 });
 
 // PUT endpoint to handle both marking the meal as consumed and inserting nutrition data
@@ -148,21 +153,43 @@ router.get("/:userId", (req, res) => {
 
 // PUT endpoint to update a meal plan
 router.put("/:id", (req, res) => {
-  const { userId, date, type } = req.body;
+  const { userId, name, date, type, calories, proteins, carbs, fats } = req.body;
   const { id } = req.params;
-  const query = `UPDATE mealplans SET userId = ?, date = ?, type = ? WHERE id = ?`;
 
-  db.query(query, [userId, date, type, id], (err, results) => {
+  db.beginTransaction(err => {
     if (err) {
-      return res
-        .status(500)
-        .send({ message: "Failed to update meal plan", error: err.toString() });
+      return res.status(500).send({ message: "Failed to start transaction", error: err.toString() });
     }
-    res.status(200).send({ message: "Meal plan updated successfully" });
+
+    const updateMealPlanQuery = "UPDATE mealplans SET userId = ?, name = ?, date = ?, type = ? WHERE id = ?";
+    db.query(updateMealPlanQuery, [userId, name, date, type, id], (err, result) => {
+      if (err) {
+        return db.rollback(() => {
+          res.status(500).send({ message: "Failed to update meal plan", error: err.toString() });
+        });
+      }
+
+      const updateNutritionQuery = "UPDATE mealnutrition SET calories = ?, proteins = ?, carbs = ?, fats = ? WHERE mealplanid = ?";
+      db.query(updateNutritionQuery, [calories, proteins, carbs, fats, id], (err, result) => {
+        if (err) {
+          return db.rollback(() => {
+            res.status(500).send({ message: "Failed to update nutritional information", error: err.toString() });
+          });
+        }
+
+        db.commit(err => {
+          if (err) {
+            return db.rollback(() => {
+              res.status(500).send({ message: "Failed to commit transaction", error: err.toString() });
+            });
+          }
+          res.status(200).send({ message: "Meal plan updated successfully" });
+        });
+      });
+    });
   });
 });
 
-// DELETE endpoint to delete a meal plan
 // DELETE endpoint to delete a meal plan and related nutrition information
 router.delete("/:id", (req, res) => {
   const { id } = req.params;

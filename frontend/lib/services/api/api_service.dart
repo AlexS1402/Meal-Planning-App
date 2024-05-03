@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mealplanningapp/models/recipe_model.dart';
 import 'package:mealplanningapp/models/mealplan_model.dart';
+import 'package:mealplanningapp/services/user_service.dart';
 
 class ApiService {
   final String baseUrl = 'http://192.168.1.215:3001'; // Adjust as needed
@@ -11,7 +12,8 @@ class ApiService {
   //method to fetch recipes
   Future<List<Recipe>> fetchRecipes() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/recipes'));
+      int userId = await UserService.getUserId();
+      final response = await http.get(Uri.parse('$baseUrl/recipes?userId=$userId'));
       if (response.statusCode == 200) {
         List<dynamic> body = jsonDecode(response.body);
         return body.map((dynamic item) => Recipe.fromJson(item)).toList();
@@ -25,6 +27,8 @@ class ApiService {
 
   //method to add recipes
   Future<void> addRecipe(Map<String, dynamic> recipeData) async {
+    int userId = await UserService.getUserId();
+    recipeData['userId'] = userId; // Ensure userId is always included
     final response = await http.post(
       Uri.parse('$baseUrl/recipes'),
       headers: {'Content-Type': 'application/json'},
@@ -56,15 +60,11 @@ class ApiService {
 
   //method to delete recipes
   Future<void> deleteRecipe(int id) async {
-    try {
-      final response = await http.delete(Uri.parse('$baseUrl/$id'));
-      if (response.statusCode != 200) {
-        throw Exception('Failed to delete recipe');
-      }
-    } catch (e) {
-      throw Exception('Failed to delete recipe: $e');
-    }
+  final response = await http.delete(Uri.parse('$baseUrl/recipes/$id'));
+  if (response.statusCode != 200) {
+    throw Exception('Failed to delete recipe');
   }
+}
 
   //method to search for recipes
   Future<List<Recipe>> searchRecipes(String query, int page) async {
@@ -103,16 +103,23 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$baseUrl/mealplans'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode(mealPlanData),
+      body: json.encode({
+        'userId': mealPlanData['userId'],
+        'name': mealPlanData[
+            'name'], // Make sure this matches with your TextField controller
+        'date': mealPlanData['date'],
+        'type': mealPlanData['type'],
+        'recipes': mealPlanData['recipes'],
+      }),
     );
     if (response.statusCode != 201) {
       throw Exception('Failed to add meal plan');
     }
   }
 
-  Future<void> updateMealPlan(int id, Map<String, dynamic> mealPlanData) async {
+  Future<void> updateMealPlan(Map<String, dynamic> mealPlanData) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/mealplans/$id'),
+      Uri.parse('$baseUrl/mealplans/${mealPlanData['id']}'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(mealPlanData),
     );
@@ -169,7 +176,8 @@ class ApiService {
               child: Text("Yes"),
               onPressed: () {
                 Navigator.of(dialogContext).pop(); // Close the dialog
-                markAsConsumed(mealPlan); // Proceed to mark as consumed, passing context
+                markAsConsumed(
+                    mealPlan); // Proceed to mark as consumed, passing context
               },
             ),
           ],
@@ -177,4 +185,17 @@ class ApiService {
       },
     );
   }
+
+  Future<void> logout() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/logout'));
+      if (response.statusCode != 200) {
+        throw Exception('Failed to logout');
+      }
+    } catch (e) {
+      print('Logout error: $e');
+      throw Exception('Logout failed: $e');
+    }
+  }
+
 }

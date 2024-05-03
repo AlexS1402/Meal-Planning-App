@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert'; // For using jsonDecode
 import 'package:mealplanningapp/views/signup_screen.dart';
 import 'package:mealplanningapp/views/main_navigation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mealplanningapp/services/user_service.dart';
+
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -67,6 +70,18 @@ class LoginScreen extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Future<void> saveUserId(int userId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    debugPrint('userId: $userId');
+    await prefs.setInt('userId', userId);
+  }
+
+  Future<void> logout(BuildContext context) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userId');
+    Navigator.of(context).pushReplacementNamed('/login');
   }
 
   @override

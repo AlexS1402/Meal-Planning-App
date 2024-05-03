@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mealplanningapp/models/recipe_model.dart';
 import 'package:mealplanningapp/services/api/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RecipeDetailsScreen extends StatefulWidget {
   final Recipe recipe;
@@ -22,6 +23,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen> {
     super.initState();
     _editableRecipe = Recipe(
       id: widget.recipe.id,
+      userId: widget.recipe.userId,
       title: widget.recipe.title,
       description: widget.recipe.description,
       calories: widget.recipe.calories,

@@ -56,95 +56,101 @@ class _RecipeSearchState extends State<RecipeSearch> {
   }
 
   void searchRecipes(String query, {int page = 1}) async {
-  setState(() {
-    isLoading = true;
-  });
-  try {
-    recipes = await ApiService().searchRecipes(query, page);
     setState(() {
-      isLoading = false;
+      isLoading = true;
+      currentPage = page; // Update currentPage state here
     });
-  } catch (e) {
-    setState(() {
-      isLoading = false;
-    });
-    showErrorDialog(e.toString());
+    try {
+      recipes = await ApiService().searchRecipes(query, page);
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      showErrorDialog(e.toString());
+    }
   }
-}
 
   @override
- 
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('Recipes'),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.add, color: Colors.green),
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => AddRecipeScreen()));
-          },
-        )
-      ],
-    ),
-    body: Column(
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              labelText: 'Search recipes',
-              suffixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(),
-            ),
-            onSubmitted: (String value) {
-              searchRecipes(value);
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Recipes'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add, color: Colors.green),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => AddRecipeScreen()));
             },
+          )
+        ],
+      ),
+      body: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Search recipes',
+                suffixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (String value) {
+                searchRecipes(value);
+              },
+            ),
           ),
-        ),
-        Expanded(
-          child: isLoading
-              ? Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  itemCount: recipes.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(recipes[index].title),
-                      subtitle: Text(
-                        'Calories: ${recipes[index].calories.toString()}, Proteins: ${recipes[index].proteins.toString()}g, '
-                        'Carbs: ${recipes[index].carbs.toString()}g, Fats: ${recipes[index].fats.toString()}g',
-                      ),
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => RecipeDetailsScreen(recipe: recipes[index])));
-                      },
-                    );
-                  },
-                ),
-        ),
-        // Pagination controls
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                if (currentPage > 1) {
-                  searchRecipes(_searchController.text, page: currentPage - 1);
-                }
-              },
-            ),
-            Text('Page $currentPage'),
-            IconButton(
-              icon: Icon(Icons.arrow_forward),
-              onPressed: () {
-                searchRecipes(_searchController.text, page: currentPage + 1);
-              },
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: recipes.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(recipes[index].title),
+                        subtitle: Text(
+                          'Calories: ${recipes[index].calories.toString()}, Proteins: ${recipes[index].proteins.toString()}g, '
+                          'Carbs: ${recipes[index].carbs.toString()}g, Fats: ${recipes[index].fats.toString()}g',
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => RecipeDetailsScreen(
+                                      recipe: recipes[index])));
+                        },
+                      );
+                    },
+                  ),
+          ),
+          // Pagination controls
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () {
+                  if (currentPage > 1) {
+                    searchRecipes(_searchController.text,
+                        page: currentPage - 1);
+                  }
+                },
+              ),
+              Text('Page $currentPage'),
+              IconButton(
+                icon: Icon(Icons.arrow_forward),
+                onPressed: () {
+                  searchRecipes(_searchController.text, page: currentPage + 1);
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -1,13 +1,34 @@
-const redis = require('redis');
-const client = redis.createClient({
-    socket: {
-      host: '127.0.0.1',
-      port: 6379
+const redis = require("redis");
+const redisClient = redis.createClient({
+  socket: {
+    host: "127.0.0.1",
+    port: 6379,
+  },
+});
+
+redisClient.on("error", (err) => console.log("Redis Client Error", err));
+
+redisClient.connect().then(() => {
+  console.log('Connected to Redis');
+  // You can perform operations here that need to happen right after connecting
+  clearCache();
+}).catch((err) => {
+  console.error('Redis connection error:', err);
+});
+
+function clearCache() {
+  // This function clears specific cache keys when called
+  redisClient.del("recipes:*", (err, response) => {
+    if (err) {
+      console.error("Failed to clear cache", err);
+    } else {
+      console.log("Cache cleared", response);
     }
   });
-  
-  client.on('error', (err) => console.log('Redis Client Error', err));
+}
 
-client.connect();
+module.exports = {
+  redisClient,
+  clearCache
+};
 
-module.exports = client;

@@ -27,7 +27,7 @@ class MealPlan {
       userId: int.parse(json['userId'].toString()),
       date: json['date'],
       type: json['type'],
-      name: json['name'],  // Parse new field
+      name: json['name'],
       calories: int.parse(json['calories'].toString()),
       proteins: int.parse(json['proteins'].toString()),
       carbs: int.parse(json['carbs'].toString()),

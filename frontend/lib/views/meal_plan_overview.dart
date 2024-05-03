@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mealplanningapp/services/api/api_service.dart';
 import 'package:mealplanningapp/models/mealplan_model.dart';
-import 'package:mealplanningapp/views/mealplan_details';
+import 'package:mealplanningapp/views/mealplan_details.dart';
 import 'package:mealplanningapp/views/add_meal_screen.dart';
+import 'package:mealplanningapp/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class MealPlanOverview extends StatefulWidget {
   const MealPlanOverview({super.key});
@@ -66,7 +69,9 @@ class _MealPlanOverviewState extends State<MealPlanOverview> {
 
   Future<void> _loadMealPlans() async {
     try {
-      var mealPlans = await _apiService.fetchMealPlans(1); // Assume userId is 1
+      int userId = await UserService.getUserId();
+      //debugPrint('userId: $userId');
+      var mealPlans = await _apiService.fetchMealPlans(userId); 
       setState(() {
         _mealPlans = mealPlans;
         _errorMessage = '';
@@ -88,7 +93,7 @@ Widget build(BuildContext context) {
             icon: Icon(Icons.add),
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => AddMealPlan()),
+                MaterialPageRoute(builder: (context) => AddMealPlanScreen()),
               );
             },
           ),

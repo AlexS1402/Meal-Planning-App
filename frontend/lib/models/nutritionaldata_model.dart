@@ -22,7 +22,7 @@ class NutritionalDataModel {
     return NutritionalDataModel(
       id: map['id'],
       userId: map['userId'],
-      date: DateTime.parse(map['date']),
+      date: DateTime.parse(map['dateConsumed']),
       calories: map['calories'],
       proteins: map['proteins'],
       carbs: map['carbs'],
@@ -35,7 +35,7 @@ class NutritionalDataModel {
     return {
       'id': id,
       'userId': userId,
-      'date': date.toIso8601String(),
+      'dateConsumed': date.toIso8601String(),
       'calories': calories,
       'proteins': proteins,
       'carbs': carbs,
