@@ -1,12 +1,13 @@
 const mysql = require('mysql2');
 const fs = require('fs');
+require('dotenv').config();
 
 // Create a database connection and export it
 const db = mysql.createConnection({
-    host: 'meal-planner-db.mysql.database.azure.com',
-    user: 'root_admin',
-    password: '36ZUzXR5287i',
-    database: 'meal_planning_app',
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     ssl: {
         ca: fs.readFileSync('DigiCertGlobalRootCA.crt.pem')
       }

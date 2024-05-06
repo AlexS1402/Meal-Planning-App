@@ -17,7 +17,7 @@ class _MainNavigationState extends State<MainNavigation> {
   static const List<Widget> _widgetOptions = <Widget>[
     MealPlanOverview(),
     RecipeSearch(),
-    ShoppingList(),
+    RecipeSuggestion(),
     NutritionalTracking(),
   ];
 
@@ -51,7 +51,7 @@ class _MainNavigationState extends State<MainNavigation> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
-            label: 'Meal Plan',
+            label: 'Meal Planner',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.apps),
@@ -59,7 +59,7 @@ class _MainNavigationState extends State<MainNavigation> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
-            label: 'Shopping List',
+            label: 'Suggestions',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.blender),

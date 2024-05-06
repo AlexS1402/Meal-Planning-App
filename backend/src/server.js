@@ -8,6 +8,7 @@ const mealPlansRoutes = require('./routes/mealplans-be');
 const router = express.Router();
 const session = require('express-session');
 const nutritionRoutes = require('./routes/nutritions-be');
+require('dotenv').config();
 
 // Initialize express app
 const app = express();
@@ -23,7 +24,7 @@ app.get('/', (req, res) => {
 
 // use the session middleware
 app.use(session({
-    secret: 'your-secret-key',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: true } // Set to true if you're using HTTPS
