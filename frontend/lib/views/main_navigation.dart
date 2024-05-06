@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'meal_plan_overview.dart';
 import 'recipe_search.dart';
-import 'shopping_list.dart';
+import 'recipe_suggestion.dart';
 import 'nutritional_tracking.dart';
-import 'feedback_support.dart';
 import 'settings_profile.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -18,9 +17,8 @@ class _MainNavigationState extends State<MainNavigation> {
   static const List<Widget> _widgetOptions = <Widget>[
     MealPlanOverview(),
     RecipeSearch(),
-    ShoppingList(),
+    RecipeSuggestion(),
     NutritionalTracking(),
-    FeedbackSupport(),
   ];
 
   void _onItemTapped(int index) {
@@ -41,7 +39,7 @@ class _MainNavigationState extends State<MainNavigation> {
             icon: Icon(Icons.settings),
             onPressed: () {
             // This should navigate to your settings/profile page
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsProfile()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsProfile()));
           },
         ),
       ],
@@ -53,7 +51,7 @@ class _MainNavigationState extends State<MainNavigation> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
-            label: 'Meal Plan',
+            label: 'Meal Planner',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.apps),
@@ -61,16 +59,12 @@ class _MainNavigationState extends State<MainNavigation> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
-            label: 'Shopping List',
+            label: 'Suggestions',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.blender),
             label: 'Nutrition',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.feedback),
-            label: 'Feedback',
-          ),
+          ),     
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).primaryColor,

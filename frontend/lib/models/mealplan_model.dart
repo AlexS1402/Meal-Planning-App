@@ -1,35 +1,37 @@
-import 'meal_model.dart';
+class MealPlan {
+  final int id;
+  final int userId;
+  final String date;
+  final String type;
+  final String name;
+  final int calories;
+  final int proteins;
+  final int carbs;
+  final int fats;
 
-class MealPlanModel {
-  final String id;
-  final DateTime date;
-  final List<MealModel> meals; 
-  final double totalCalories;
-
-  MealPlanModel({
+  MealPlan({
     required this.id,
+    required this.userId,
     required this.date,
-    required this.meals,
-    required this.totalCalories,
+    required this.type,
+    required this.name,
+    required this.calories,
+    required this.proteins,
+    required this.carbs,
+    required this.fats,
   });
 
-// Factory constructor to create a MealPlanModel from a map
-  factory MealPlanModel.fromMap(Map<String, dynamic> map) {
-    return MealPlanModel(
-      id: map['id'],
-      date: DateTime.parse(map['date']),
-      meals: (map['meals'] as List<dynamic>).map((meal) => MealModel.fromMap(meal)).toList(),
-      totalCalories: map['totalCalories'],
+  factory MealPlan.fromJson(Map<String, dynamic> json) {
+    return MealPlan(
+      id: int.parse(json['id'].toString()),
+      userId: int.parse(json['userId'].toString()),
+      date: json['date'],
+      type: json['type'],
+      name: json['name'],
+      calories: int.parse(json['calories'].toString()),
+      proteins: int.parse(json['proteins'].toString()),
+      carbs: int.parse(json['carbs'].toString()),
+      fats: int.parse(json['fats'].toString()),
     );
-  }
-
-// Method to convert MealPlanModel to a map
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'date': date.toIso8601String(),
-      'meals': meals.map((meal) => meal.toMap()).toList(),
-      'totalCalories': totalCalories,
-    };
   }
 }

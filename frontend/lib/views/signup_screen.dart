@@ -1,11 +1,103 @@
 import 'package:flutter/material.dart';
-import 'package:mealplanningapp/views/main_navigation.dart';
-import 'main_navigation.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // For using jsonDecode
 
 class SignupScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  SignupScreen({super.key});
+
+  Future<void> signUp(BuildContext context) async {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Error'),
+          content: const Text('Passwords do not match.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: const Text('Okay'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'http://localhost:3001/auth/register'), // Adjust this URL
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'username': _emailController.text,
+          'password': _passwordController.text,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Success'),
+            content: Text('Account created successfully. Please login.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  Navigator.pop(context); // Go back to the login screen
+                },
+                child: const Text('Okay'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Handle failure
+        final responseData = jsonDecode(response.body);
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Registration Failed'),
+            content: Text(responseData['message']),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text('Okay'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle error in sending request
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Error'),
+          content: Text('An error occurred. Please try again later.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: const Text('Okay'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +139,7 @@ class SignupScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Placeholder for signup logic
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MainNavigation()), // Update to your home screen
-                );
+                signUp(context);
               },
               child: Text('Sign Up'),
             ),
