@@ -76,7 +76,7 @@ Copy code
 After starting both the frontend and backend, navigate to the app in your web browser or use a mobile device to access the Flutter application. Register a new user account to begin planning meals, adding recipes, and tracking nutritional intake.
 
 ## Contact
-Your Name - [your-email@example.com](mailto:your-email@example.com)
+Alex Saunders - [alexander.saunders14@yahoo.co.uk](mailto:alexander.saunders14@yahoo.co.uk)
 
 Project Link: [https://github.com/AlexS1402/meal-planning-app](https://github.com/AlexS1402/meal-planning-app)
 
