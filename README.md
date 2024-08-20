@@ -32,18 +32,12 @@ This application is designed to help users plan their meals efficiently by manag
 1. Clone the repository:
 git clone https://github.com/yourusername/meal-planning-app.git
 
-css
-Copy code
 2. Navigate to the backend directory:
 cd meal-planning-app/backend
 
-markdown
-Copy code
 3. Install dependencies:
 npm install
 
-markdown
-Copy code
 4. Set up environment variables:
 - Rename `.env.example` to `.env`
 - Fill in your MySQL credentials and OpenAI API key in `.env`
@@ -52,25 +46,15 @@ Copy code
 npm start
 redis-server
 
-markdown
-Copy code
-
 ### Setting Up the Frontend
 1. Navigate to the frontend directory:
 cd meal-planning-app/frontend
 
-markdown
-Copy code
 2. Install Flutter dependencies:
 flutter pub get
 
-markdown
-Copy code
 3. Run the Flutter application:
 flutter run
-
-less
-Copy code
 
 ## Usage
 After starting both the frontend and backend, navigate to the app in your web browser or use a mobile device to access the Flutter application. Register a new user account to begin planning meals, adding recipes, and tracking nutritional intake.
